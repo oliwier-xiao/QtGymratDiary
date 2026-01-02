@@ -7,9 +7,8 @@ Login::Login(QWidget* parent) : QWidget(parent) {
     auto layout = new QVBoxLayout(this);
     layout->setAlignment(Qt::AlignCenter);
 
-    // Karta (kontener)
     auto container = new QFrame();
-    container->setObjectName("Card"); // Styl z Theme.h
+    container->setObjectName("Card");
     container->setFixedWidth(400);
     auto formLayout = new QVBoxLayout(container);
 
@@ -25,13 +24,12 @@ Login::Login(QWidget* parent) : QWidget(parent) {
     m_passField->setEchoMode(QLineEdit::Password);
 
     auto loginBtn = new QPushButton("ZALOGUJ");
-    loginBtn->setProperty("class", "Primary"); // Styl z Theme.h
+    loginBtn->setProperty("class", "Primary");
 
     m_statusLabel = new QLabel("");
     m_statusLabel->setStyleSheet("color: #B00020; font-weight: bold;");
     m_statusLabel->setAlignment(Qt::AlignCenter);
 
-    // Dodawanie do układu
     formLayout->addWidget(title);
     formLayout->addWidget(m_loginField);
     formLayout->addWidget(m_passField);
@@ -41,8 +39,12 @@ Login::Login(QWidget* parent) : QWidget(parent) {
 
     layout->addWidget(container);
 
-    // Podłączenie przycisku
+    // --- Obsługa przycisku ---
     connect(loginBtn, &QPushButton::clicked, this, &Login::handleLogin);
+
+    // --- NOWOŚĆ: Obsługa klawisza ENTER ---
+    connect(m_loginField, &QLineEdit::returnPressed, this, &Login::handleLogin);
+    connect(m_passField, &QLineEdit::returnPressed, this, &Login::handleLogin);
 }
 
 void Login::handleLogin() {
@@ -53,10 +55,9 @@ void Login::handleLogin() {
 
     if (user) {
         m_statusLabel->setText("Zalogowano pomyślnie!");
-        emit loginSuccess(user); // Sygnał do MainWindow, że można zmienić ekran
+        emit loginSuccess(user);
     }
     else {
         m_statusLabel->setText("Błędny login lub hasło!");
-        // Opcjonalnie trzęsienie oknem lub inny efekt
     }
 }
