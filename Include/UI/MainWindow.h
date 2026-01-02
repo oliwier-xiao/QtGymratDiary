@@ -7,7 +7,7 @@
 #include <QVBoxLayout>
 #include "Login.h"        
 #include "Dashboard.h"    
-#include "DataManager.h"  
+#include "Core/DataManager.h"  
 #include "BMIWidget.h"    
 
 class MainWindow : public QMainWindow {

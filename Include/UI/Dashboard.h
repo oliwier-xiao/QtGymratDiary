@@ -15,9 +15,9 @@
 #include <QTimer>          
 #include <QScrollBar>      
 
-#include "StatsManager.h"
-#include "DiarySystem.h"
-#include "Mentor.h"   
+#include "Logic/StatsManager.h"
+#include "Logic/DiarySystem.h"
+#include "Logic/Mentor.h"   
 
 class Dashboard : public QWidget {
     Q_OBJECT

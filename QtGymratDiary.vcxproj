@@ -105,18 +105,18 @@
     <ClCompile Include="Source\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Include\BMIWidget.h" />
-    <ClInclude Include="Include\DiarySystem.h" />
-    <ClInclude Include="Include\Health.h" />
-    <ClInclude Include="Include\Mentor.h" />
-    <ClInclude Include="Include\StatsManager.h" />
-    <ClInclude Include="Include\Theme.h" />
-    <ClInclude Include="Include\Training.h" />
-    <ClInclude Include="Include\User.h" />
-    <QtMoc Include="Include\Login.h" />
-    <QtMoc Include="Include\Dashboard.h" />
-    <ClInclude Include="Include\DataManager.h" />
-    <QtMoc Include="Include\MainWindow.h" />
+    <QtMoc Include="Include\UI\BMIWidget.h" />
+    <ClInclude Include="Include\Logic\DiarySystem.h" />
+    <ClInclude Include="Include\Logic\Health.h" />
+    <ClInclude Include="Include\Logic\Mentor.h" />
+    <ClInclude Include="Include\Logic\StatsManager.h" />
+    <ClInclude Include="Include\Core\Theme.h" />
+    <ClInclude Include="Include\Logic\Training.h" />
+    <ClInclude Include="Include\Core\User.h" />
+    <QtMoc Include="Include\UI\Login.h" />
+    <QtMoc Include="Include\UI\Dashboard.h" />
+    <ClInclude Include="Include\Core\DataManager.h" />
+    <QtMoc Include="Include\UI\MainWindow.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

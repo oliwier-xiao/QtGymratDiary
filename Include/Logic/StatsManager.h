@@ -2,7 +2,7 @@
 #include <QString>
 #include <QVector>
 #include <QDate>
-#include "DataManager.h"
+#include "Core/DataManager.h"
 #include "DiarySystem.h"
 
 // Struktura pomocnicza - paczka z danymi na dziś

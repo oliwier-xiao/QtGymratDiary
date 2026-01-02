@@ -6,8 +6,8 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QFrame>
-#include "Health.h"
-#include "DataManager.h"
+#include "Logic/Health.h"
+#include "Core/DataManager.h"
 
 class BMIWidget : public QWidget {
     Q_OBJECT

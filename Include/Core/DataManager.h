@@ -8,8 +8,8 @@
 #include <cmath>
 
 #include "User.h"
-#include "Health.h"
-#include "DiarySystem.h"
+#include "Logic/Health.h"
+#include "Logic/DiarySystem.h"
 
 class DataManager {
     inline static const QString USERS_FILE = "Resource/users.txt";

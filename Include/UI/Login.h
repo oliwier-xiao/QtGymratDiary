@@ -6,7 +6,7 @@
 #include <QVBoxLayout>
 #include <QStackedWidget>
 #include <QResizeEvent>
-#include "User.h"
+#include "Core/User.h"
 
 class Login : public QWidget {
     Q_OBJECT

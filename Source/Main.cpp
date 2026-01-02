@@ -1,6 +1,8 @@
 #include <QApplication>
-#include "MainWindow.h"
-#include "Theme.h"
+#include "UI/MainWindow.h"
+#include "UI/Login.h"
+#include "Core/Theme.h"
+#include "Core/DataManager.h"
 
 int main(int argc, char *argv[]) {
     QApplication a(argc, argv);

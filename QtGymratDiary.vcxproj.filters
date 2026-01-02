@@ -39,42 +39,42 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\DataManager.h">
+    <ClInclude Include="Include\Core\DataManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Health.h">
+    <ClInclude Include="Include\Logic\Health.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Theme.h">
+    <ClInclude Include="Include\Core\Theme.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Training.h">
+    <ClInclude Include="Include\Logic\Training.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\User.h">
+    <ClInclude Include="Include\Core\User.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\DiarySystem.h">
+    <ClInclude Include="Include\Logic\DiarySystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\StatsManager.h">
+    <ClInclude Include="Include\Logic\StatsManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Mentor.h">
+    <ClInclude Include="Include\Logic\Mentor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="Include\Dashboard.h">
+    <QtMoc Include="Include\UI\Dashboard.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Include\Login.h">
+    <QtMoc Include="Include\UI\Login.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Include\MainWindow.h">
+    <QtMoc Include="Include\UI\MainWindow.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="Include\BMIWidget.h">
+    <QtMoc Include="Include\UI\BMIWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>
