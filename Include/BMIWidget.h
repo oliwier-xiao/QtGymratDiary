@@ -24,7 +24,7 @@ public:
 
         auto layout = new QVBoxLayout(this);
         auto card = new QFrame();
-        card->setProperty("class", "Card");
+        card->setObjectName("Card"); // Ważne dla stylu tła
         auto cardLayout = new QVBoxLayout(card);
 
         auto header = new QLabel("Kalkulator BMI & Zapotrzebowania");
@@ -41,14 +41,16 @@ public:
 
         auto activityLabel = new QLabel("Aktywność w tygodniu:");
         activitySelect = new QComboBox();
-        // ItemData to mnożnik PAL, a index posłuży nam do ustalenia celu treningowego
-        activitySelect->addItem("Brak treningów (Siedzący)", 1.2);      // Index 0 -> Cel: 0
-        activitySelect->addItem("1-2 treningi (Lekki)", 1.35);          // Index 1 -> Cel: 2
-        activitySelect->addItem("3-4 treningi (Umiarkowany)", 1.55);    // Index 2 -> Cel: 4
-        activitySelect->addItem("5+ treningów (Duży)", 1.75);           // Index 3 -> Cel: 7
+        activitySelect->addItem("Brak treningów (Siedzący)", 1.2);
+        activitySelect->addItem("1-2 treningi (Lekki)", 1.35);
+        activitySelect->addItem("3-4 treningi (Umiarkowany)", 1.55);
+        activitySelect->addItem("5+ treningów (Duży)", 1.75);
 
         auto calcBtn = new QPushButton("Oblicz i Zapisz Profil");
-        calcBtn->setProperty("class", "Secondary");
+        // --- ZMIANA: Używamy PrimaryButton (Fioletowy) ---
+        calcBtn->setObjectName("PrimaryButton");
+        calcBtn->setCursor(Qt::PointingHandCursor);
+        calcBtn->setMinimumHeight(45);
 
         resultLabel = new QLabel("Wynik: --");
         resultLabel->setStyleSheet("font-size: 16px; color: #3700B3; margin-top: 15px;");
@@ -76,21 +78,16 @@ public:
 
             if (okW && okH && h > 0) {
                 BMIRecord record(w, h);
-
-                // 1. Oblicz Kalorie
                 double bmr = (10 * w) + (6.25 * h) - (5 * 25) + 5;
                 double activityMultiplier = activitySelect->currentData().toDouble();
                 double tdee = bmr * activityMultiplier;
                 int finalCalories = static_cast<int>(tdee + goalSelect->currentData().toInt());
 
-                // 2. Ustal Cel Treningowy na podstawie wyboru (Indeks listy)
                 int activityIndex = activitySelect->currentIndex();
                 int trainingGoal = 0;
-
-                if (activityIndex == 0) trainingGoal = 0;      // Brak
-                else if (activityIndex == 1) trainingGoal = 2; // 1-2 -> Zaokrąglamy do 2
-                else if (activityIndex == 2) trainingGoal = 4; // 3-4 -> Zaokrąglamy do 4
-                else if (activityIndex == 3) trainingGoal = 7; // 5+ -> Tydzień ma 7 dni
+                if (activityIndex == 1) trainingGoal = 2;
+                else if (activityIndex == 2) trainingGoal = 4;
+                else if (activityIndex == 3) trainingGoal = 7;
 
                 QString goalName = goalSelect->currentText().split("(")[0];
 
@@ -99,8 +96,6 @@ public:
                     "Zapotrzebowanie: " + QString::number(finalCalories) + " kcal\n" +
                     "Cel treningowy: " + QString::number(trainingGoal) + " / tydz."
                 );
-
-                // Zapisujemy wszystko (używamy nowej funkcji saveFullProfile)
                 DataManager::saveFullProfile(m_currentUser, record, finalCalories, trainingGoal);
             }
             else {

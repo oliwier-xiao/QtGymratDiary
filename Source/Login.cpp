@@ -4,8 +4,7 @@
 #include <QFrame>
 
 Login::Login(QWidget* parent) : QWidget(parent) {
-    // --- ZMIANA: Usunąłem setStyleSheet, który psuł przyciski! ---
-    // Zamiast tego nadajemy nazwę, żeby Theme.h ustawił białe tło.
+   
     setObjectName("LoginScreen");
 
     m_stack = new QStackedWidget(this);
@@ -83,8 +82,8 @@ QWidget* Login::createRegisterView() {
     title->setAlignment(Qt::AlignCenter);
 
     m_regName = new QLineEdit(); m_regName->setPlaceholderText("Twoje Imię (np. Oliwier)");
-    m_regLogin = new QLineEdit(); m_regLogin->setPlaceholderText("Wymyśl Login");
-    m_regPass = new QLineEdit(); m_regPass->setPlaceholderText("Wymyśl Hasło");
+    m_regLogin = new QLineEdit(); m_regLogin->setPlaceholderText("Login");
+    m_regPass = new QLineEdit(); m_regPass->setPlaceholderText("Hasło");
     m_regPass->setEchoMode(QLineEdit::Password);
 
     auto createBtn = new QPushButton("ZAREJESTRUJ I ZALOGUJ");

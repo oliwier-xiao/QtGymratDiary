@@ -106,7 +106,10 @@
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="Include\BMIWidget.h" />
+    <ClInclude Include="Include\DiarySystem.h" />
     <ClInclude Include="Include\Health.h" />
+    <ClInclude Include="Include\Mentor.h" />
+    <ClInclude Include="Include\StatsManager.h" />
     <ClInclude Include="Include\Theme.h" />
     <ClInclude Include="Include\Training.h" />
     <ClInclude Include="Include\User.h" />

@@ -4,8 +4,12 @@
 #include <QTextStream>
 #include <QDir>
 #include <QDate>
+#include <QVector>
+#include <cmath>
+
 #include "User.h"
 #include "Health.h"
+#include "DiarySystem.h"
 
 class DataManager {
     inline static const QString USERS_FILE = "Resource/users.txt";
@@ -13,13 +17,9 @@ class DataManager {
 public:
     static void init() {
         if (!QDir("Resource").exists()) QDir().mkpath("Resource");
-
-        // Upewnij się, że plik użytkowników istnieje
         QFile file(USERS_FILE);
         if (!file.exists()) {
-            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                file.close();
-            }
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text)) file.close();
         }
     }
 
@@ -27,37 +27,25 @@ public:
         QString folderName = username;
         if (folderName.compare("admin", Qt::CaseInsensitive) == 0) folderName = "#Admin";
         QString path = "Resource/Users/" + folderName + "/Data";
-
-        // Tworzy foldery rekurencyjnie (Resource -> Users -> Oliwier -> Data)
-        if (!QDir(path).exists()) {
-            QDir().mkpath(path);
-        }
+        if (!QDir(path).exists()) QDir().mkpath(path);
         return path;
     }
 
-    // --- NOWOŚĆ: Rejestracja ---
     static bool registerUser(const QString& login, const QString& pass, const QString& name) {
-        // 1. Sprawdź czy login już istnieje
         QFile rFile(USERS_FILE);
         if (rFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream in(&rFile);
             while (!in.atEnd()) {
-                QString line = in.readLine();
-                // Sprawdzamy pierwszy element (login) przed znakiem |
-                if (line.startsWith(login + "|")) return false;
+                if (in.readLine().startsWith(login + "|")) return false;
             }
             rFile.close();
         }
 
-        // 2. Zapisz nowego użytkownika
         QFile wFile(USERS_FILE);
         if (wFile.open(QIODevice::Append | QIODevice::Text)) {
             QTextStream out(&wFile);
-            // Format: login|hasło|imię|data
             out << login << "|" << pass << "|" << name << "|" << QDate::currentDate().toString(Qt::ISODate) << "\n";
             wFile.close();
-
-            // 3. Stwórz od razu strukturę folderów dla tego użytkownika!
             getUserDataPath(login);
             return true;
         }
@@ -69,10 +57,8 @@ public:
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             QTextStream in(&file);
             while (!in.atEnd()) {
-                QString line = in.readLine();
-                QStringList parts = line.split("|");
+                QStringList parts = in.readLine().split("|");
                 if (parts.size() >= 3 && parts[0] == login && parts[1] == pass) {
-                    // parts[0]=login, parts[1]=pass, parts[2]=name
                     return new AthleteUser(parts[0], parts[1], parts[2]);
                 }
             }
@@ -81,40 +67,33 @@ public:
         return nullptr;
     }
 
-    // --- ZAPISYWANIE DANYCH (Bez zmian) ---
     static void saveFullProfile(const QString& username, const BMIRecord& record, int calorieGoal, int trainingGoal) {
         QString path = getUserDataPath(username);
-
         QFile bmiFile(path + "/bmi_logs.txt");
         if (bmiFile.open(QIODevice::Append | QIODevice::Text)) {
-            QTextStream out(&bmiFile);
-            out << record.serialize() << "\n";
+            QTextStream out(&bmiFile); out << record.serialize() << "\n";
         }
         QFile dietFile(path + "/diet_goal.txt");
         if (dietFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream out(&dietFile);
-            out << calorieGoal;
+            QTextStream out(&dietFile); out << calorieGoal;
         }
         QFile trainFile(path + "/training_goal.txt");
         if (trainFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            QTextStream out(&trainFile);
-            out << trainingGoal;
+            QTextStream out(&trainFile); out << trainingGoal;
         }
     }
 
-    // --- ODCZYTYWANIE DANYCH (Bez zmian) ---
     static int loadCalorieGoal(const QString& username) {
         QFile file(getUserDataPath(username) + "/diet_goal.txt");
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) return QTextStream(&file).readLine().toInt();
         return 2000;
     }
+
     static int loadTrainingGoal(const QString& username) {
         QFile file(getUserDataPath(username) + "/training_goal.txt");
         if (file.open(QIODevice::ReadOnly | QIODevice::Text)) return QTextStream(&file).readLine().toInt();
         return 3;
     }
-    static int loadConsumedCalories(const QString& username) { return 0; }
-    static int loadWeeklyTrainings(const QString& username) { return 0; }
 
     static void getBestStats(const QString& username, double& bestWeight, double& bestBMI) {
         QFile file(getUserDataPath(username) + "/bmi_logs.txt");
@@ -123,8 +102,7 @@ public:
             QTextStream in(&file);
             double minDiff = 999.0;
             while (!in.atEnd()) {
-                QString line = in.readLine();
-                QStringList parts = line.split("|");
+                QStringList parts = in.readLine().split("|");
                 if (parts.size() >= 4) {
                     double w = parts[1].toDouble();
                     double bmi = parts[3].toDouble();
@@ -135,4 +113,81 @@ public:
             }
         }
     }
+
+    static void saveEntry(const QString& username, const DiaryEntry* entry) {
+        QString path = getUserDataPath(username);
+        QFile file(path + "/diary_log.txt");
+        if (file.open(QIODevice::Append | QIODevice::Text)) {
+            QTextStream out(&file); out << entry->serialize() << "\n";
+        }
+    }
+
+    // --- POPRAWIONA FUNKCJA WCZYTYWANIA ---
+    static QVector<DiaryEntry*> loadEntries(const QString& username) {
+        QVector<DiaryEntry*> entries;
+        QString path = getUserDataPath(username);
+        QFile file(path + "/diary_log.txt");
+
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                QStringList parts = line.split("|");
+
+                if (parts.size() >= 2) {
+                    // 1. ODCZYTUJEMY DATĘ Z PLIKU
+                    QDateTime dt = QDateTime::fromString(parts[0], Qt::ISODate);
+                    QString type = parts[1];
+
+                    DiaryEntry* entry = nullptr;
+
+                    if (type == "MEAL" && parts.size() >= 4) {
+                        entry = new MealEntry(parts[2], parts[3].toInt());
+                    }
+                    else if (type == "WORKOUT" && parts.size() >= 5) {
+                        entry = new WorkoutEntry(parts[2], parts[3].toInt(), parts[4].toInt());
+                    }
+
+                    if (entry) {
+                        // 2. USTAWIAMY TĘ DATĘ W OBIEKCIE (ważne dla usuwania!)
+                        entry->setDate(dt);
+                        entries.append(entry);
+                    }
+                }
+            }
+        }
+        return entries;
+    }
+
+    static void removeEntry(const QString& username, const QString& serializedData) {
+        QString path = getUserDataPath(username) + "/diary_log.txt";
+        QFile file(path);
+        QStringList lines;
+        bool found = false;
+
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream in(&file);
+            while (!in.atEnd()) {
+                QString line = in.readLine();
+                // Porównujemy dokładnie treść linii
+                if (!found && line == serializedData) {
+                    found = true;
+                }
+                else {
+                    lines.append(line);
+                }
+            }
+            file.close();
+        }
+
+        if (found) {
+            if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+                QTextStream out(&file);
+                for (const QString& l : lines) out << l << "\n";
+            }
+        }
+    }
+
+    static int loadConsumedCalories(const QString& username) { return 0; }
+    static int loadWeeklyTrainings(const QString& username) { return 0; }
 };
