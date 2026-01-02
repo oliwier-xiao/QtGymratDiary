@@ -1,48 +1,64 @@
 #pragma once 
 #include <QMainWindow>
 #include <QStackedWidget>
-#include <QButtonGroup>
-#include <QLabel>
-#include <QPushButton>
+#include <QWidget>
 #include <QVBoxLayout>
-#include "Login.h"        
+
 #include "Dashboard.h"    
-#include "Core/DataManager.h"  
-#include "BMIWidget.h"    
+#include "BMIWidget.h"
+#include "../Core/User.h"
+#include "../Core/DataManager.h"  
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
-        QStackedWidget* mainStack;
+
+private:
+    QStackedWidget* mainStack;
     QWidget* dashboardContainer;
     User* currentUser = nullptr;
 
 public:
-    MainWindow() {
+    // Konstruktor WYMAGA u¿ytkownika
+    explicit MainWindow(User* user, QWidget* parent = nullptr)
+        : QMainWindow(parent), currentUser(user)
+    {
         resize(1200, 800);
         DataManager::init();
+
+        if (currentUser) {
+            setWindowTitle("Gymrat Diary - Zalogowany jako: " + currentUser->getName());
+        }
 
         mainStack = new QStackedWidget(this);
         setCentralWidget(mainStack);
 
-        auto loginScreen = new Login();
-        mainStack->addWidget(loginScreen);
-
         dashboardContainer = new QWidget();
         mainStack->addWidget(dashboardContainer);
 
-        connect(loginScreen, &Login::loginSuccess, this, &MainWindow::onLogin);
+        createDashboardUI();
     }
 
     void createDashboardUI() {
-        if (dashboardContainer->layout()) delete dashboardContainer->layout();
+        if (!currentUser) return;
+
+        // Czyœcimy stary widok
+        if (dashboardContainer->layout()) {
+            QLayout* oldLayout = dashboardContainer->layout();
+            QLayoutItem* item;
+            while ((item = oldLayout->takeAt(0)) != nullptr) {
+                delete item->widget();
+                delete item;
+            }
+            delete oldLayout;
+        }
+
         auto mainLayout = new QVBoxLayout(dashboardContainer);
         mainLayout->setContentsMargins(0, 0, 0, 0);
 
-        // --- ZMIANA: Przekazujemy login ORAZ imiê ---
         auto dashboard = new Dashboard(currentUser->getLogin(), currentUser->getName());
 
         auto stack = dashboard->getStack();
-        if (stack->count() > 3) {
+        if (stack && stack->count() > 3) {
             auto oldWidget = stack->widget(3);
             stack->removeWidget(oldWidget);
             stack->insertWidget(3, new BMIWidget(currentUser->getLogin()));
@@ -50,12 +66,5 @@ public:
         }
 
         mainLayout->addWidget(dashboard);
-    }
-
-    void onLogin(User* user) {
-        currentUser = user;
-        createDashboardUI();
-        mainStack->setCurrentWidget(dashboardContainer);
-        setWindowTitle("Gymrat Diary - Zalogowany jako: " + user->getName());
     }
 };

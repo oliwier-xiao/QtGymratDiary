@@ -1,16 +1,20 @@
 #include <QApplication>
-#include "UI/MainWindow.h"
-#include "UI/Login.h"
+#include <QIcon>
+#include "UI/Login.h"        // Startujemy od Logowania
 #include "Core/Theme.h"
 #include "Core/DataManager.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
-    
-    // Aplikacja globalnego stylu
+
+   
+    DataManager::init();
+
+   
     a.setStyleSheet(Theme::APP_STYLE);
 
-    MainWindow w;
+
+    Login w;
     w.show();
 
     return a.exec();

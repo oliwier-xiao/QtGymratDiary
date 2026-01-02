@@ -1,152 +1,148 @@
-﻿#include "Login.h"
-#include "DataManager.h"
+﻿#include "UI/Login.h"
+#include "UI/MainWindow.h"
+#include "Core/DataManager.h"
+#include "Core/Theme.h"
+
+#include <QVBoxLayout>
+#include <QLabel>
+#include <QLineEdit>
+#include <QPushButton>
 #include <QMessageBox>
-#include <QFrame>
+#include <QInputDialog>
+#include <QPixmap> 
 
 Login::Login(QWidget* parent) : QWidget(parent) {
-   
-    setObjectName("LoginScreen");
+    this->setObjectName("LoginScreen");
+    this->setFixedSize(450, 650);
+    this->setWindowTitle("Gymrat Diary - Logowanie");
 
-    m_stack = new QStackedWidget(this);
-    m_stack->addWidget(createLoginView());
-    m_stack->addWidget(createRegisterView());
-
-    // Wymuszamy rozmiar startowy
-    resize(1200, 800);
+    auto mainLayout = new QVBoxLayout(this);
+    mainLayout->setAlignment(Qt::AlignCenter);
+    mainLayout->addWidget(createLoginView());
+    // Nakładamy styl globalny na to okno
+    this->setStyleSheet(Theme::APP_STYLE);
 }
 
 QWidget* Login::createLoginView() {
     auto container = new QFrame();
     container->setObjectName("Card");
+    container->setFixedWidth(380);
 
     auto layout = new QVBoxLayout(container);
     layout->setContentsMargins(40, 40, 40, 40);
     layout->setSpacing(15);
 
+    // --- LOGO ---
+    auto logoLabel = new QLabel();
+    QPixmap pixmap("Resource/logo.png");
+    if (!pixmap.isNull()) {
+        logoLabel->setPixmap(pixmap.scaled(150, 150, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        logoLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(logoLabel);
+    }
+
     auto title = new QLabel("GYMRAT DIARY");
-    title->setStyleSheet("font-size: 28px; font-weight: bold; color: #6200EE; margin-bottom: 20px; border: none; background: transparent;");
+    title->setProperty("class", "Header");
     title->setAlignment(Qt::AlignCenter);
+    // Styl nagłówka
+    title->setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 10px; color: #6200EE;");
+    layout->addWidget(title);
 
-    m_loginField = new QLineEdit(); m_loginField->setPlaceholderText("Login");
-    m_passField = new QLineEdit(); m_passField->setPlaceholderText("Hasło");
-    m_passField->setEchoMode(QLineEdit::Password);
+    // --- POLA TEKSTOWE ---
+    m_usernameInput = new QLineEdit();
+    m_usernameInput->setPlaceholderText("Login");
 
-    auto loginBtn = new QPushButton("ZALOGUJ SIĘ");
+    m_passwordInput = new QLineEdit();
+    m_passwordInput->setPlaceholderText("Hasło");
+    m_passwordInput->setEchoMode(QLineEdit::Password);
+
+    // --- PRZYCISK LOGOWANIA (Primary) ---
+    auto loginBtn = new QPushButton("Zaloguj się");
     loginBtn->setObjectName("PrimaryButton");
     loginBtn->setCursor(Qt::PointingHandCursor);
     loginBtn->setMinimumHeight(45);
 
-    auto registerBtn = new QPushButton("Utwórz nowe konto");
-    registerBtn->setObjectName("PrimaryButton");
+    // --- PRZYCISK REJESTRACJI (Secondary / Outlined) ---
+    auto registerBtn = new QPushButton("Utwórz konto");
     registerBtn->setCursor(Qt::PointingHandCursor);
     registerBtn->setMinimumHeight(45);
 
-    m_statusLabel = new QLabel("");
-    m_statusLabel->setStyleSheet("color: #B00020; font-weight: bold; border: none; background: transparent;");
-    m_statusLabel->setAlignment(Qt::AlignCenter);
+    // NAPRAWA: Jawnie ustawiamy tło na białe i dodajemy ramkę.
+    // Dzięki temu tekst #6200EE będzie widoczny na białym tle #FFFFFF.
+    registerBtn->setStyleSheet(
+        "QPushButton {"
+        "  background-color: #FFFFFF;"   // Białe tło (kluczowe!)
+        "  color: #6200EE;"              // Fioletowy tekst
+        "  border: 2px solid #6200EE;"   // Fioletowa ramka
+        "  border-radius: 4px;"
+        "  font-weight: bold;"
+        "  margin-top: 10px;"
+        "}"
+        "QPushButton:hover {"
+        "  background-color: #EDE7F6;"   // Bardzo jasny fiolet po najechaniu
+        "}"
+        "QPushButton:pressed {"
+        "  background-color: #D1C4E9;"   // Ciemniejszy przy kliknięciu
+        "}"
+    );
 
-    layout->addWidget(title);
+    layout->addWidget(m_usernameInput);
+    layout->addWidget(m_passwordInput);
     layout->addSpacing(10);
-    layout->addWidget(m_loginField);
-    layout->addWidget(m_passField);
-    layout->addSpacing(20);
     layout->addWidget(loginBtn);
-
-    auto labelOr = new QLabel("— lub —");
-    labelOr->setAlignment(Qt::AlignCenter);
-    labelOr->setStyleSheet("color: #888; margin: 5px 0; border: none; background: transparent;");
-    layout->addWidget(labelOr);
-
     layout->addWidget(registerBtn);
-    layout->addWidget(m_statusLabel);
     layout->addStretch();
 
+    // Podpinanie sygnałów
     connect(loginBtn, &QPushButton::clicked, this, &Login::handleLogin);
-    connect(m_loginField, &QLineEdit::returnPressed, this, &Login::handleLogin);
-    connect(m_passField, &QLineEdit::returnPressed, this, &Login::handleLogin);
-    connect(registerBtn, &QPushButton::clicked, this, &Login::showRegister);
-
-    return container;
-}
-
-QWidget* Login::createRegisterView() {
-    auto container = new QFrame();
-    container->setObjectName("Card");
-
-    auto layout = new QVBoxLayout(container);
-    layout->setContentsMargins(40, 40, 40, 40);
-    layout->setSpacing(15);
-
-    auto title = new QLabel("REJESTRACJA");
-    title->setStyleSheet("font-size: 24px; font-weight: bold; color: #03DAC6; margin-bottom: 20px; border: none; background: transparent;");
-    title->setAlignment(Qt::AlignCenter);
-
-    m_regName = new QLineEdit(); m_regName->setPlaceholderText("Twoje Imię (np. Oliwier)");
-    m_regLogin = new QLineEdit(); m_regLogin->setPlaceholderText("Login");
-    m_regPass = new QLineEdit(); m_regPass->setPlaceholderText("Hasło");
-    m_regPass->setEchoMode(QLineEdit::Password);
-
-    auto createBtn = new QPushButton("ZAREJESTRUJ I ZALOGUJ");
-    createBtn->setObjectName("PrimaryButton");
-    createBtn->setMinimumHeight(45);
-    createBtn->setCursor(Qt::PointingHandCursor);
-
-    auto backBtn = new QPushButton("Anuluj");
-    backBtn->setFlat(true);
-    backBtn->setStyleSheet("color: #666; font-weight: bold; border: none; background: transparent;");
-    backBtn->setCursor(Qt::PointingHandCursor);
-
-    m_regStatus = new QLabel("");
-    m_regStatus->setStyleSheet("color: #B00020; font-weight: bold; border: none; background: transparent;");
-    m_regStatus->setAlignment(Qt::AlignCenter);
-
-    layout->addWidget(title);
-    layout->addWidget(m_regName);
-    layout->addWidget(m_regLogin);
-    layout->addWidget(m_regPass);
-    layout->addSpacing(20);
-    layout->addWidget(createBtn);
-    layout->addWidget(m_regStatus);
-    layout->addWidget(backBtn);
-    layout->addStretch();
-
-    connect(createBtn, &QPushButton::clicked, this, &Login::handleRegister);
-    connect(backBtn, &QPushButton::clicked, this, &Login::showLogin);
+    connect(registerBtn, &QPushButton::clicked, this, &Login::handleRegister);
+    connect(m_usernameInput, &QLineEdit::returnPressed, this, &Login::handleLogin);
+    connect(m_passwordInput, &QLineEdit::returnPressed, this, &Login::handleLogin);
 
     return container;
 }
 
 void Login::handleLogin() {
-    QString login = m_loginField->text();
-    QString pass = m_passField->text();
-    User* user = DataManager::login(login, pass);
-    if (user) {
-        m_statusLabel->setText("Logowanie...");
-        emit loginSuccess(user);
+    QString user = m_usernameInput->text().trimmed();
+    QString pass = m_passwordInput->text().trimmed();
+
+    if (user.isEmpty() || pass.isEmpty()) {
+        QMessageBox::warning(this, "Błąd", "Podaj login i hasło!");
+        return;
+    }
+
+    User* loggedUser = DataManager::login(user, pass);
+
+    if (loggedUser) {
+        // Tworzymy główne okno i zamykamy ekran logowania
+        MainWindow* w = new MainWindow(loggedUser);
+        w->show();
+        this->close();
     }
     else {
-        m_statusLabel->setText("Błędny login lub hasło!");
-        m_passField->clear();
+        QMessageBox::critical(this, "Błąd", "Nieprawidłowy login lub hasło.");
     }
 }
 
 void Login::handleRegister() {
-    QString name = m_regName->text();
-    QString login = m_regLogin->text();
-    QString pass = m_regPass->text();
-    if (name.isEmpty() || login.isEmpty() || pass.isEmpty()) {
-        m_regStatus->setText("Wypełnij wszystkie pola!");
+    QString user = m_usernameInput->text().trimmed();
+    QString pass = m_passwordInput->text().trimmed();
+
+    if (user.isEmpty() || pass.isEmpty()) {
+        QMessageBox::warning(this, "Rejestracja", "Wpisz login i hasło w pola powyżej, a następnie kliknij Utwórz konto.");
         return;
     }
-    if (DataManager::registerUser(login, pass, name)) {
-        QMessageBox::information(this, "Sukces", "Konto " + login + " zostało utworzone!");
-        showLogin();
-        m_loginField->setText(login);
-        m_passField->setFocus();
+
+    bool ok;
+    // Upewnij się, że plik jest zapisany jako UTF-8 z BOM, żeby polskie znaki działały!
+    QString name = QInputDialog::getText(this, "Rejestracja", "Podaj swoje imię:", QLineEdit::Normal, "", &ok);
+
+    if (!ok || name.isEmpty()) return;
+
+    if (DataManager::registerUser(user, pass, name)) {
+        QMessageBox::information(this, "Sukces", "Konto utworzone! Możesz się teraz zalogować.");
     }
     else {
-        m_regStatus->setText("Login zajęty! Wybierz inny.");
+        QMessageBox::warning(this, "Błąd", "Taki użytkownik już istnieje!");
     }
 }
-void Login::showRegister() { m_stack->setCurrentIndex(1); m_regStatus->clear(); m_regName->clear(); m_regLogin->clear(); m_regPass->clear(); }
-void Login::showLogin() { m_stack->setCurrentIndex(0); m_statusLabel->clear(); }
